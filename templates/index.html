@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Telemetry and Track</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+        #container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .plot-container {
+            flex: 1;
+            min-width: 45%;
+            max-width: 45%;
+            box-sizing: border-box;
+        }
+        .plot-container img {
+            width: 100%;
+            height: auto;
+            border: 2px solid #444;
+            border-radius: 10px;
+        }
+        #slider {
+            width: 80%;
+            margin: 20px auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dynamic Telemetry and Track</h1>
+    <div id="container">
+        <div class="plot-container">
+            <img id="telemetry-image" src="" alt="Telemetry Plot">
+        </div>
+        <div class="plot-container">
+            <img id="track-image" src="" alt="Track Plot">
+        </div>
+    </div>
+    <input type="range" id="slider" min="0" max="100" value="0">
+    <script>
+        var socket = io();
+        var slider = document.getElementById('slider');
+
+        socket.on('update', function(data) {
+            // Aggiorna il grafico dello stile di guida
+            document.getElementById('telemetry-image').src = 'data:image/png;base64,' + data.telemetry_image;
+
+            // Aggiorna il grafico del tracciato
+            document.getElementById('track-image').src = 'data:image/png;base64,' + data.track_image;
+
+            // Aggiorna lo slider
+            slider.max = data.max_index;
+            slider.value = data.index;
+        });
+
+        // Gestisci il cambiamento dello slider
+        slider.addEventListener('input', function() {
+            socket.emit('set_position', { index: this.value });
+        });
+    </script>
+</body>
+</html>
